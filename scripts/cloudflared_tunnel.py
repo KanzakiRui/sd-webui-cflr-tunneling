@@ -2,7 +2,6 @@ import os
 import platform
 import stat
 import subprocess
-import sys
 import threading
 import urllib.request
 import re
@@ -13,10 +12,16 @@ BIN_DIR = os.path.join(EXT_DIR, "bin")
 BIN_PATH = os.path.join(BIN_DIR, "cloudflared")
 
 def get_cloudflared_token():
-    for i, arg in enumerate(sys.argv):
-        if arg == "--cloudflared" and i + 1 < len(sys.argv):
-            return sys.argv[i + 1]
-    return None
+    token = getattr(shared.cmd_opts, "cloudflared", None)
+    if token is None:
+        return None
+
+    token = token.strip()
+    if not token:
+        print("Cloudflared: --cloudflared provided without a token; falling back to quick tunnel mode.")
+        return None
+
+    return token
 
 def get_system_arch():
     system = platform.system().lower()
